@@ -9,7 +9,18 @@ import json
 from datetime import date, datetime
 import os
 import datetime
+import logging
+import redis
+import sys
+from datetime import timedelta
+#from urllib.parse import urlparse
+#from jose import JWTError, jwt
+from passlib.context import CryptContext
 
+from redis import Redis
+
+ACCESS_TOKEN_EXPIRE_MINUTES = 15
+logging.basicConfig()
 app = FastAPI()
 
 # DB_HOST = '127.0.0.1'
@@ -29,6 +40,30 @@ ps_connection = psycopg2.connect(user="postgres",
                                  database="postgres")
 ps_cursor = ps_connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
+
+def redis_connect() -> redis.client.Redis:
+    try:
+        # redis_url = os.getenv('REDISTOGO_URL')
+        #
+        # urlparse.uses_netloc.append('redis')
+        # url = urlparse.urlparse(redis_url)
+        # client = Redis(host=url.hostname, port=url.port, db=0, password=url.password)
+        client = redis.Redis(
+            host='localhost',
+            port=6379,
+            #password="ubuntu",
+            db=0
+            #socket_timeout=5,
+        )
+        ping = client.ping()
+        if ping is True:
+            return client
+    except redis.AuthenticationError:
+        print("AuthenticationError")
+        sys.exit(1)
+
+
+client = redis_connect()
 
 # ps_connection=None
 
@@ -56,6 +91,14 @@ class CouponOut(BaseModel):
 
 
 class Invoice(BaseModel):
+    user_id: int
+    coupon_code: str
+    amount: int
+    coupon_discount: int
+
+
+class InvoiceOut(BaseModel):
+    id: int
     user_id: int
     coupon_code: str
     amount: int
@@ -92,7 +135,9 @@ def get_coupon(coupon_code: Optional[str] = None, coupon_id: Optional[int] = Non
 async def create_coupon(coupon: Coupon, response: Response):
     coupon_ = get_Coupon(coupon.coupon_code)
     if len(coupon_) != 0:
-        raise HTTPException(status_code=409, detail="Coupon_code already exists!")
+        response.status_code = status.HTTP_409_CONFLICT
+        return "Coupon_code already exists!"
+        #raise HTTPException(status_code=409, detail="Coupon_code already exists!")
 
     ps_connection = get_connection()
     cur = ps_connection.cursor()
@@ -149,6 +194,7 @@ async def create_coupon(coupon: Coupon, response: Response):
         coupon_id = cur.fetchone()[0]
         print(count, "Record inserted successfully into coupons table")
 
+
         # data = {}
         # data[''] = []
         # data['data'].append({
@@ -171,6 +217,9 @@ async def create_coupon(coupon: Coupon, response: Response):
                 "user_id": ''' + str(coupon.user_id) + '''
             }
         '''
+
+        set_routes_to_cache(key="coupon-id:"+str(coupon_id), value=data)
+        print(get_routes_from_cache(key="coupon-id:"+str(coupon_id)))
         response.status_code = status.HTTP_201_CREATED
     except (Exception, psycopg2.Error) as error:
         raise HTTPException(status_code=500, detail="Internal server error!")
@@ -195,8 +244,10 @@ async def use_coupon(invoice: Invoice, response: Response):
             #     raise HTTPException(status_code=403, detail="Coupon is expired!")
 
             out = track_of_coupon(invoice.coupon_code)
-            if len(out) == coupon_[2]:
-                raise HTTPException(status_code=403, detail="Coupon has already been used!")
+            if len(out) >= int(coupon_[2]):
+                #raise HTTPException(status_code=403, detail="Coupon has already been used!")
+                response.status_code = status.HTTP_403_FORBIDDEN
+                return "Coupon has already been used!"
 
             ps_connection = get_connection()
             cur = ps_connection.cursor()
@@ -211,15 +262,30 @@ async def use_coupon(invoice: Invoice, response: Response):
 
                 ps_connection.commit()
                 count = cur.rowcount
-                coupon_id = cur.fetchone()[0]
+                invoice_id = cur.fetchone()[0]
                 print(count, "Record inserted successfully into invoices table")
 
+                data = InvoiceOut(
+                id=invoice_id,
+                user_id=invoice.user_id,
+                coupon_code=invoice.coupon_code,
+                amount=invoice.amount,
+                coupon_discount=invoice.coupon_discount,
+                create_at=create_date,
+                paid_at=create_date
+                )
+
+                set_routes_to_cache(key="invoice-id:" + str(invoice_id), value=str(data))
+                print(get_routes_from_cache(key="coupon-id:" + str(invoice_id)))
                 response.status_code = status.HTTP_201_CREATED
+                return data
             except (Exception, psycopg2.Error) as error:
                 raise HTTPException(status_code=500, detail="Internal server error!")
 
         else:
-            raise HTTPException(status_code=403, detail="Coupon not exists or is not authorized!")
+            #raise HTTPException(status_code=403, detail="Coupon not exists or is not authorized!")
+            response.status_code = status.HTTP_403_FORBIDDEN
+            return "Coupon not exists or is not authorized!"
     except (Exception, psycopg2.Error) as error:
         print(error)
 
@@ -235,6 +301,20 @@ def get_connection():
     else:
         connection = ps_connection
     return connection
+
+
+def get_routes_from_cache(key: str) -> str:
+    """Get data from redis."""
+
+    val = client.get(key)
+    return val
+
+
+def set_routes_to_cache(key: str, value: str) -> bool:
+    """Set data to redis."""
+
+    state = client.setex(key, timedelta(seconds=3600), value=value, )
+    return state
 
 
 def get_Coupon(coupon_code_):
@@ -294,6 +374,7 @@ def show_Coupons(coupon_code_=None, coupon_id_=None):
             qry += ' and coupon_id_ = %s'
             qry_c = [coupon_id_]
         else:
+            #return "One parameter must be involved!"
             raise HTTPException(status_code=400, detail="One parameter must be involved!")
 
         cur.execute(
