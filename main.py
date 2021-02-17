@@ -13,6 +13,8 @@ import logging
 import redis
 import sys
 from datetime import timedelta
+import pytz
+import requests
 #from urllib.parse import urlparse
 #from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -67,6 +69,7 @@ client = redis_connect()
 
 # ps_connection=None
 
+
 class Coupon(BaseModel):
     coupon_code: str
     description: Optional[str] = None
@@ -103,6 +106,8 @@ class InvoiceOut(BaseModel):
     coupon_code: str
     amount: int
     coupon_discount: int
+    create_at: datetime.datetime
+    paid_at: datetime.datetime
 
 
 @app.get("/")
@@ -112,23 +117,48 @@ def read_root():
 
 @app.get("/coupons/{coupon_code}")
 def get_coupon(coupon_code: Optional[str] = None, coupon_id: Optional[int] = None):
-    coupons = show_Coupons(coupon_code, coupon_id)
-    out = []
     try:
-        if coupons:
-            for item in coupons:
-                lst = {}
-                lst["id"] = item[0]
-                lst["user_id"] = item[1]
-                lst["coupon_code"] = item[2]
-                lst["created_at"] = item[3]
-                lst["rule"] = item[4]
-                lst["results"] = item[5]
-                lst["description"] = item[6]
-                return lst
+
+        coupon = get_routes_from_cache(key="coupon-code:" + coupon_code)
+        # if coupon is None:
+        #     #response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        #     print(coupon)
+        #     return "Failed to get redis value"
+
+        d = coupon.decode('utf8').replace("'", '"')
+        c = json.loads(d)
+        print(c)
+        lst = {}
+        lst["id"] = c["id"]
+        lst["user_id"] = c["user_id"]
+        lst["coupon_code"] = c["coupon_code"]
+        lst["created_at"] = c["created_at"]
+        lst["rule"] = c["rule"]
+        lst["results"] = c["results"]
+        lst["description"] = c["description"]
+        return json.dumps(lst)
     except (Exception, psycopg2.Error) as error:
         print(error)
-    return out
+        raise HTTPException(status_code=500, detail="Internal server error!")
+
+
+    # coupons = show_Coupons(coupon_code, coupon_id)
+    #
+    # try:
+    #     if coupons:
+    #         for item in coupons:
+    #             lst = {}
+    #             lst["id"] = item[0]
+    #             lst["user_id"] = item[1]
+    #             lst["coupon_code"] = item[2]
+    #             lst["created_at"] = item[3]
+    #             lst["rule"] = item[4]
+    #             lst["results"] = item[5]
+    #             lst["description"] = item[6]
+    #             return lst
+    # except (Exception, psycopg2.Error) as error:
+    #     print(error)
+    #     raise HTTPException(status_code=500, detail="Internal server error!")
 
 
 @app.post("/coupon/", status_code=201)
@@ -142,14 +172,6 @@ async def create_coupon(coupon: Coupon, response: Response):
     ps_connection = get_connection()
     cur = ps_connection.cursor()
     try:
-        # results = {}
-        # results[''] = []
-        # results['results'].append({
-        #     'discount_type': coupon.discount_type,
-        #     'discount_percent': coupon.discount_percent,
-        #     'discount_ceil': coupon.discount_ceil,
-        #     'discount_amount': coupon.discount_amount
-        # })
 
         results = '''
         {
@@ -162,15 +184,6 @@ async def create_coupon(coupon: Coupon, response: Response):
         }
         '''
 
-        # rule = {}
-        # rule[''] = []
-        # rule['rule'].append({
-        #     'user_id': coupon.user_id,
-        #     'product_id': coupon.product_id,
-        #     'expire_date': coupon.expire_date,
-        #     'count_of_use': coupon.count_of_use
-        # })
-
         rule = '''
                 {
                     "rule": {
@@ -181,7 +194,7 @@ async def create_coupon(coupon: Coupon, response: Response):
                     }
                 }
                 '''
-        create_date = date.today()
+        create_date = datetime.datetime.now(pytz.timezone('Asia/Tehran')).strftime("%Y-%m-%d %H:%M:%S") #date.today()
         segment = """ INSERT INTO coupons (coupon_code , created_at ,results , rule ,description , user_id ) values  
         (%s,%s,%s,%s,%s,%s) RETURNING id"""
         record_to_insert = (coupon.coupon_code, str(create_date), results, rule, coupon.description,
@@ -193,33 +206,37 @@ async def create_coupon(coupon: Coupon, response: Response):
         count = cur.rowcount
         coupon_id = cur.fetchone()[0]
         print(count, "Record inserted successfully into coupons table")
+        print(datetime.datetime.now(pytz.timezone('Asia/Tehran')).strftime("%Y-%m-%d %H:%M:%S"))
+
+        # data = '''
+        #     {
+        #         "id": ''' + str(coupon_id) + ''',
+        #         "coupon_code": ''' + str(coupon.coupon_code) + ''',
+        #         "created_at": "''' + str(create_date) + '''",
+        #         "results": [''' + str(results) + '''],
+        #         "rule": [''' + str(rule) + '''],
+        #         "description": "''' + str(coupon.description) + '''",
+        #         "user_id": ''' + str(coupon.user_id) + '''
+        #     }
+        # '''
+
+        data = CouponOut(
+            id=coupon_id,
+            user_id=coupon.user_id,
+            coupon_code=coupon.coupon_code,
+            created_at=create_date,
+            rule=rule,
+            results=results,
+            description=coupon.description
+        )
+
+        status_ = set_routes_to_cache(key="coupon-code:"+str(coupon.coupon_code), value=data.json())
+        if not status_:
+            response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+            return "Failed to set redis key"
 
 
-        # data = {}
-        # data[''] = []
-        # data['data'].append({
-        #     'id': coupon_id,
-        #     'coupon_code': coupon.coupon_code,
-        #     'created_at': create_date,
-        #     'results': results['results'],
-        #     'rule': rule['rule'],
-        #     'description': coupon.description,
-        #     'user_id': coupon.user_id
-        # })
-        data = '''
-            {
-                "id": ''' + str(coupon_id) + ''',
-                "coupon_code": ''' + str(coupon.coupon_code) + ''',
-                "created_at": "''' + str(create_date) + '''",
-                "results": [''' + str(results) + '''],
-                "rule": [''' + str(rule) + '''],
-                "description": "''' + str(coupon.description) + '''",
-                "user_id": ''' + str(coupon.user_id) + '''
-            }
-        '''
-
-        set_routes_to_cache(key="coupon-id:"+str(coupon_id), value=data)
-        print(get_routes_from_cache(key="coupon-id:"+str(coupon_id)))
+        print(get_routes_from_cache(key="coupon-code:"+str(coupon.coupon_code)))
         response.status_code = status.HTTP_201_CREATED
     except (Exception, psycopg2.Error) as error:
         raise HTTPException(status_code=500, detail="Internal server error!")
@@ -252,7 +269,7 @@ async def use_coupon(invoice: Invoice, response: Response):
             ps_connection = get_connection()
             cur = ps_connection.cursor()
             try:
-                create_date = date.today()
+                create_date = datetime.datetime.now(pytz.timezone('Asia/Tehran')).strftime("%Y-%m-%d %H:%M:%S") #date.today()
                 segment = """ INSERT INTO invoices (user_id ,coupon_code , amount, coupon_discount, create_at, paid_at) values  
                     (%s,%s,%s,%s,%s,%s) RETURNING id"""
                 record_to_insert = (
@@ -266,17 +283,26 @@ async def use_coupon(invoice: Invoice, response: Response):
                 print(count, "Record inserted successfully into invoices table")
 
                 data = InvoiceOut(
-                id=invoice_id,
-                user_id=invoice.user_id,
-                coupon_code=invoice.coupon_code,
-                amount=invoice.amount,
-                coupon_discount=invoice.coupon_discount,
-                create_at=create_date,
-                paid_at=create_date
+                    id=invoice_id,
+                    user_id=invoice.user_id,
+                    coupon_code=invoice.coupon_code,
+                    amount=invoice.amount,
+                    coupon_discount=invoice.coupon_discount,
+                    create_at=create_date,
+                    paid_at=create_date
                 )
+                print(data.json())
+                #print(json.dumps(data))
+                status_ = set_routes_to_cache(key="invoice-id:" + str(invoice_id), value=data.json())
+                if not status_:
+                    response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+                    return "Failed to set redis key"
 
-                set_routes_to_cache(key="invoice-id:" + str(invoice_id), value=str(data))
-                print(get_routes_from_cache(key="coupon-id:" + str(invoice_id)))
+                # coupon = get_routes_from_cache(key="coupon-code:" + invoice.coupon_code)
+                # d = coupon.decode('utf8').replace("'", '"')
+                # c = json.loads(d)
+
+                print(get_routes_from_cache(key="invoice_id:" + str(invoice_id)))
                 response.status_code = status.HTTP_201_CREATED
                 return data
             except (Exception, psycopg2.Error) as error:
