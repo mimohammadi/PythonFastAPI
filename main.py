@@ -116,7 +116,7 @@ def read_root():
 
 
 @app.get("/coupons/{coupon_code}")
-def get_coupon(coupon_code: Optional[str] = None, coupon_id: Optional[int] = None):
+def get_coupon(coupon_code: str, coupon_id: Optional[int] = None):
     try:
 
         coupon = get_routes_from_cache(key="coupon-code:" + coupon_code)
