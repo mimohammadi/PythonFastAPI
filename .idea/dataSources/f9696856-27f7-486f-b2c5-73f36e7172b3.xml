@@ -2,7 +2,7 @@
 <dataSource name="PostgreSQL - postgres@localhost">
   <database-model serializer="dbm" dbms="POSTGRES" family-id="POSTGRES" format-version="4.20">
     <root id="1">
-      <ServerVersion>12.5</ServerVersion>
+      <ServerVersion>12.6</ServerVersion>
       <DateStyle>mdy</DateStyle>
       <TimeZones>true ACDT
 true ACSST
@@ -1406,13 +1406,13 @@ false posix/WET
 false posix/Zulu
 false posixrules
 </TimeZones>
-      <StartupTime>1613328770</StartupTime>
+      <StartupTime>1613802866</StartupTime>
     </root>
     <database id="2" parent="1" name="postgres">
       <ObjectId>13461</ObjectId>
       <Comment>default administrative connection database</Comment>
       <Owner>postgres</Owner>
-      <IntrospectionStateNumber>520</IntrospectionStateNumber>
+      <IntrospectionStateNumber>586</IntrospectionStateNumber>
       <Current>1</Current>
       <Relations>sequence|table|16384|16386|1
 sequence|table|16394|16396|1
@@ -1466,79 +1466,185 @@ sequence|table|16424|16426|1
     </tablespace>
     <schema id="14" parent="2" name="information_schema">
       <ObjectId>13161</ObjectId>
+      <Acl>10=UC/10
+U/10
+</Acl>
       <StateNumber>281</StateNumber>
       <Owner>postgres</Owner>
     </schema>
     <schema id="15" parent="2" name="pg_catalog">
       <ObjectId>11</ObjectId>
       <Comment>system catalog schema</Comment>
+      <Acl>10=UC/10
+U/10
+</Acl>
       <StateNumber>274</StateNumber>
       <Owner>postgres</Owner>
     </schema>
     <schema id="16" parent="2" name="public">
       <ObjectId>2200</ObjectId>
       <Comment>standard public schema</Comment>
+      <Acl>10=UC/10
+UC/10
+</Acl>
       <StateNumber>275</StateNumber>
       <Owner>postgres</Owner>
-      <IntrospectionStateNumber>521</IntrospectionStateNumber>
+      <IntrospectionStateNumber>588</IntrospectionStateNumber>
       <Current>1</Current>
     </schema>
-    <sequence id="17" parent="16" name="coupons_id_seq">
+    <extension id="17" parent="2" name="plpgsql">
+      <ObjectId>13447</ObjectId>
+      <Comment>PL/pgSQL procedural language</Comment>
+      <StateNumber>436</StateNumber>
+      <Version>1.0</Version>
+      <SchemaName>pg_catalog</SchemaName>
+      <SchemaId>11</SchemaId>
+    </extension>
+    <language id="18" parent="2" name="c">
+      <ObjectId>13</ObjectId>
+      <Comment>dynamically-loaded C functions</Comment>
+      <StateNumber>1</StateNumber>
+      <ValidatorName>fmgr_c_validator</ValidatorName>
+      <ValidatorSchema>pg_catalog</ValidatorSchema>
+    </language>
+    <language id="19" parent="2" name="internal">
+      <ObjectId>12</ObjectId>
+      <Comment>built-in functions</Comment>
+      <StateNumber>1</StateNumber>
+      <ValidatorName>fmgr_internal_validator</ValidatorName>
+      <ValidatorSchema>pg_catalog</ValidatorSchema>
+    </language>
+    <language id="20" parent="2" name="plpgsql">
+      <ObjectId>13451</ObjectId>
+      <Comment>PL/pgSQL procedural language</Comment>
+      <StateNumber>436</StateNumber>
+      <Trusted>1</Trusted>
+      <HandlerName>plpgsql_call_handler</HandlerName>
+      <HandlerSchema>pg_catalog</HandlerSchema>
+      <InlineHandlerName>plpgsql_inline_handler</InlineHandlerName>
+      <InlineHandlerSchema>pg_catalog</InlineHandlerSchema>
+      <ValidatorName>plpgsql_validator</ValidatorName>
+      <ValidatorSchema>pg_catalog</ValidatorSchema>
+    </language>
+    <language id="21" parent="2" name="sql">
+      <ObjectId>14</ObjectId>
+      <Comment>SQL-language functions</Comment>
+      <StateNumber>1</StateNumber>
+      <Trusted>1</Trusted>
+      <ValidatorName>fmgr_sql_validator</ValidatorName>
+      <ValidatorSchema>pg_catalog</ValidatorSchema>
+    </language>
+    <access-method id="22" parent="2" name="heap">
+      <ObjectId>2</ObjectId>
+      <Comment>heap table access method</Comment>
+      <StateNumber>1</StateNumber>
+      <Handler>pg_catalog.heap_tableam_handler</Handler>
+      <HandlerId>3</HandlerId>
+    </access-method>
+    <access-method id="23" parent="2" name="btree">
+      <ObjectId>403</ObjectId>
+      <Comment>b-tree index access method</Comment>
+      <StateNumber>1</StateNumber>
+      <Handler>pg_catalog.bthandler</Handler>
+      <HandlerId>330</HandlerId>
+      <Type>index</Type>
+    </access-method>
+    <access-method id="24" parent="2" name="hash">
+      <ObjectId>405</ObjectId>
+      <Comment>hash index access method</Comment>
+      <StateNumber>1</StateNumber>
+      <Handler>pg_catalog.hashhandler</Handler>
+      <HandlerId>331</HandlerId>
+      <Type>index</Type>
+    </access-method>
+    <access-method id="25" parent="2" name="gist">
+      <ObjectId>783</ObjectId>
+      <Comment>GiST index access method</Comment>
+      <StateNumber>1</StateNumber>
+      <Handler>pg_catalog.gisthandler</Handler>
+      <HandlerId>332</HandlerId>
+      <Type>index</Type>
+    </access-method>
+    <access-method id="26" parent="2" name="gin">
+      <ObjectId>2742</ObjectId>
+      <Comment>GIN index access method</Comment>
+      <StateNumber>1</StateNumber>
+      <Handler>pg_catalog.ginhandler</Handler>
+      <HandlerId>333</HandlerId>
+      <Type>index</Type>
+    </access-method>
+    <access-method id="27" parent="2" name="spgist">
+      <ObjectId>4000</ObjectId>
+      <Comment>SP-GiST index access method</Comment>
+      <StateNumber>1</StateNumber>
+      <Handler>pg_catalog.spghandler</Handler>
+      <HandlerId>334</HandlerId>
+      <Type>index</Type>
+    </access-method>
+    <access-method id="28" parent="2" name="brin">
+      <ObjectId>3580</ObjectId>
+      <Comment>block range index (BRIN) access method</Comment>
+      <StateNumber>1</StateNumber>
+      <Handler>pg_catalog.brinhandler</Handler>
+      <HandlerId>335</HandlerId>
+      <Type>index</Type>
+    </access-method>
+    <sequence id="29" parent="16" name="coupons_id_seq">
       <ObjectId>16413</ObjectId>
       <Owner>postgres</Owner>
       <StateNumber>502</StateNumber>
       <DataType>integer|0s</DataType>
     </sequence>
-    <sequence id="18" parent="16" name="invoices_id_seq">
+    <sequence id="30" parent="16" name="invoices_id_seq">
       <ObjectId>16424</ObjectId>
       <Owner>postgres</Owner>
       <StateNumber>504</StateNumber>
       <DataType>integer|0s</DataType>
     </sequence>
-    <sequence id="19" parent="16" name="permissions_id_seq">
+    <sequence id="31" parent="16" name="permissions_id_seq">
       <ObjectId>16394</ObjectId>
       <Owner>postgres</Owner>
       <StateNumber>498</StateNumber>
       <DataType>integer|0s</DataType>
     </sequence>
-    <sequence id="20" parent="16" name="user_permissions_id_seq">
+    <sequence id="32" parent="16" name="user_permissions_id_seq">
       <ObjectId>16402</ObjectId>
       <Owner>postgres</Owner>
       <StateNumber>500</StateNumber>
       <DataType>integer|0s</DataType>
     </sequence>
-    <sequence id="21" parent="16" name="users_id_seq">
+    <sequence id="33" parent="16" name="users_id_seq">
       <ObjectId>16384</ObjectId>
       <Owner>postgres</Owner>
       <StateNumber>492</StateNumber>
       <DataType>integer|0s</DataType>
     </sequence>
-    <table id="22" parent="16" name="coupons">
+    <table id="34" parent="16" name="coupons">
       <ObjectId>16415</ObjectId>
       <Owner>postgres</Owner>
       <StateNumber>502</StateNumber>
     </table>
-    <table id="23" parent="16" name="invoices">
+    <table id="35" parent="16" name="invoices">
       <ObjectId>16426</ObjectId>
       <Owner>postgres</Owner>
       <StateNumber>504</StateNumber>
     </table>
-    <table id="24" parent="16" name="permissions">
+    <table id="36" parent="16" name="permissions">
       <ObjectId>16396</ObjectId>
       <Owner>postgres</Owner>
       <StateNumber>498</StateNumber>
     </table>
-    <table id="25" parent="16" name="user_permissions">
+    <table id="37" parent="16" name="user_permissions">
       <ObjectId>16404</ObjectId>
       <Owner>postgres</Owner>
       <StateNumber>500</StateNumber>
     </table>
-    <table id="26" parent="16" name="users">
+    <table id="38" parent="16" name="users">
       <ObjectId>16386</ObjectId>
       <Owner>postgres</Owner>
-      <StateNumber>492</StateNumber>
+      <StateNumber>568</StateNumber>
     </table>
-    <column id="27" parent="22" name="id">
+    <column id="39" parent="34" name="id">
       <Position>1</Position>
       <DataType>integer|0s</DataType>
       <NotNull>1</NotNull>
@@ -1546,47 +1652,47 @@ sequence|table|16424|16426|1
       <DefaultExpression>nextval(&apos;coupons_id_seq&apos;::regclass)</DefaultExpression>
       <TypeId>23</TypeId>
     </column>
-    <column id="28" parent="22" name="user_id">
+    <column id="40" parent="34" name="user_id">
       <Position>2</Position>
       <DataType>numeric|0s</DataType>
       <NotNull>1</NotNull>
       <StateNumber>502</StateNumber>
       <TypeId>1700</TypeId>
     </column>
-    <column id="29" parent="22" name="coupon_code">
+    <column id="41" parent="34" name="coupon_code">
       <Position>3</Position>
       <DataType>varchar(50)|0s</DataType>
       <NotNull>1</NotNull>
       <StateNumber>502</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="30" parent="22" name="created_at">
+    <column id="42" parent="34" name="created_at">
       <Position>4</Position>
       <DataType>timestamp|0s</DataType>
       <StateNumber>502</StateNumber>
       <TypeId>1114</TypeId>
     </column>
-    <column id="31" parent="22" name="rule">
+    <column id="43" parent="34" name="rule">
       <Position>5</Position>
       <DataType>json|0s</DataType>
       <NotNull>1</NotNull>
       <StateNumber>502</StateNumber>
       <TypeId>114</TypeId>
     </column>
-    <column id="32" parent="22" name="results">
+    <column id="44" parent="34" name="results">
       <Position>6</Position>
       <DataType>json|0s</DataType>
       <NotNull>1</NotNull>
       <StateNumber>502</StateNumber>
       <TypeId>114</TypeId>
     </column>
-    <column id="33" parent="22" name="description">
+    <column id="45" parent="34" name="description">
       <Position>7</Position>
       <DataType>varchar(200)|0s</DataType>
       <StateNumber>502</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <index id="34" parent="22" name="coupons_pkey">
+    <index id="46" parent="34" name="coupons_pkey">
       <ObjectId>16422</ObjectId>
       <StateNumber>502</StateNumber>
       <ColNames>id</ColNames>
@@ -1596,14 +1702,14 @@ sequence|table|16424|16426|1
       <CollationIds>0</CollationIds>
       <ClassIds>1978</ClassIds>
     </index>
-    <key id="35" parent="22" name="coupons_pkey">
+    <key id="47" parent="34" name="coupons_pkey">
       <ObjectId>16423</ObjectId>
       <StateNumber>502</StateNumber>
       <ColNames>id</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>coupons_pkey</UnderlyingIndexName>
     </key>
-    <column id="36" parent="23" name="id">
+    <column id="48" parent="35" name="id">
       <Position>1</Position>
       <DataType>integer|0s</DataType>
       <NotNull>1</NotNull>
@@ -1611,46 +1717,46 @@ sequence|table|16424|16426|1
       <DefaultExpression>nextval(&apos;invoices_id_seq&apos;::regclass)</DefaultExpression>
       <TypeId>23</TypeId>
     </column>
-    <column id="37" parent="23" name="user_id">
+    <column id="49" parent="35" name="user_id">
       <Position>2</Position>
       <DataType>numeric|0s</DataType>
       <NotNull>1</NotNull>
       <StateNumber>504</StateNumber>
       <TypeId>1700</TypeId>
     </column>
-    <column id="38" parent="23" name="coupon_code">
+    <column id="50" parent="35" name="coupon_code">
       <Position>3</Position>
       <DataType>varchar(50)|0s</DataType>
       <StateNumber>504</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="39" parent="23" name="amount">
+    <column id="51" parent="35" name="amount">
       <Position>4</Position>
       <DataType>numeric|0s</DataType>
       <NotNull>1</NotNull>
       <StateNumber>504</StateNumber>
       <TypeId>1700</TypeId>
     </column>
-    <column id="40" parent="23" name="coupon_discount">
+    <column id="52" parent="35" name="coupon_discount">
       <Position>5</Position>
       <DataType>numeric|0s</DataType>
       <StateNumber>504</StateNumber>
       <TypeId>1700</TypeId>
     </column>
-    <column id="41" parent="23" name="create_at">
+    <column id="53" parent="35" name="create_at">
       <Position>6</Position>
       <DataType>timestamp|0s</DataType>
       <NotNull>1</NotNull>
       <StateNumber>504</StateNumber>
       <TypeId>1114</TypeId>
     </column>
-    <column id="42" parent="23" name="paid_at">
+    <column id="54" parent="35" name="paid_at">
       <Position>7</Position>
       <DataType>timestamp|0s</DataType>
       <StateNumber>504</StateNumber>
       <TypeId>1114</TypeId>
     </column>
-    <index id="43" parent="23" name="invoices_pkey">
+    <index id="55" parent="35" name="invoices_pkey">
       <ObjectId>16433</ObjectId>
       <StateNumber>504</StateNumber>
       <ColNames>id</ColNames>
@@ -1660,14 +1766,14 @@ sequence|table|16424|16426|1
       <CollationIds>0</CollationIds>
       <ClassIds>1978</ClassIds>
     </index>
-    <key id="44" parent="23" name="invoices_pkey">
+    <key id="56" parent="35" name="invoices_pkey">
       <ObjectId>16434</ObjectId>
       <StateNumber>504</StateNumber>
       <ColNames>id</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>invoices_pkey</UnderlyingIndexName>
     </key>
-    <column id="45" parent="24" name="id">
+    <column id="57" parent="36" name="id">
       <Position>1</Position>
       <DataType>integer|0s</DataType>
       <NotNull>1</NotNull>
@@ -1675,20 +1781,20 @@ sequence|table|16424|16426|1
       <DefaultExpression>nextval(&apos;permissions_id_seq&apos;::regclass)</DefaultExpression>
       <TypeId>23</TypeId>
     </column>
-    <column id="46" parent="24" name="description">
+    <column id="58" parent="36" name="description">
       <Position>2</Position>
       <DataType>varchar(100)|0s</DataType>
       <NotNull>1</NotNull>
       <StateNumber>498</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="47" parent="24" name="created_at">
+    <column id="59" parent="36" name="created_at">
       <Position>3</Position>
       <DataType>timestamp|0s</DataType>
       <StateNumber>498</StateNumber>
       <TypeId>1114</TypeId>
     </column>
-    <index id="48" parent="24" name="permissions_pkey">
+    <index id="60" parent="36" name="permissions_pkey">
       <ObjectId>16400</ObjectId>
       <StateNumber>498</StateNumber>
       <ColNames>id</ColNames>
@@ -1698,14 +1804,14 @@ sequence|table|16424|16426|1
       <CollationIds>0</CollationIds>
       <ClassIds>1978</ClassIds>
     </index>
-    <key id="49" parent="24" name="permissions_pkey">
+    <key id="61" parent="36" name="permissions_pkey">
       <ObjectId>16401</ObjectId>
       <StateNumber>498</StateNumber>
       <ColNames>id</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>permissions_pkey</UnderlyingIndexName>
     </key>
-    <column id="50" parent="25" name="id">
+    <column id="62" parent="37" name="id">
       <Position>1</Position>
       <DataType>integer|0s</DataType>
       <NotNull>1</NotNull>
@@ -1713,27 +1819,27 @@ sequence|table|16424|16426|1
       <DefaultExpression>nextval(&apos;user_permissions_id_seq&apos;::regclass)</DefaultExpression>
       <TypeId>23</TypeId>
     </column>
-    <column id="51" parent="25" name="user_id">
+    <column id="63" parent="37" name="user_id">
       <Position>2</Position>
       <DataType>numeric|0s</DataType>
       <NotNull>1</NotNull>
       <StateNumber>500</StateNumber>
       <TypeId>1700</TypeId>
     </column>
-    <column id="52" parent="25" name="permission_id">
+    <column id="64" parent="37" name="permission_id">
       <Position>3</Position>
       <DataType>numeric|0s</DataType>
       <NotNull>1</NotNull>
       <StateNumber>500</StateNumber>
       <TypeId>1700</TypeId>
     </column>
-    <column id="53" parent="25" name="created_at">
+    <column id="65" parent="37" name="created_at">
       <Position>4</Position>
       <DataType>timestamp|0s</DataType>
       <StateNumber>500</StateNumber>
       <TypeId>1114</TypeId>
     </column>
-    <index id="54" parent="25" name="user_permissions_pkey">
+    <index id="66" parent="37" name="user_permissions_pkey">
       <ObjectId>16411</ObjectId>
       <StateNumber>500</StateNumber>
       <ColNames>id</ColNames>
@@ -1743,14 +1849,14 @@ sequence|table|16424|16426|1
       <CollationIds>0</CollationIds>
       <ClassIds>1978</ClassIds>
     </index>
-    <key id="55" parent="25" name="user_permissions_pkey">
+    <key id="67" parent="37" name="user_permissions_pkey">
       <ObjectId>16412</ObjectId>
       <StateNumber>500</StateNumber>
       <ColNames>id</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>user_permissions_pkey</UnderlyingIndexName>
     </key>
-    <column id="56" parent="26" name="id">
+    <column id="68" parent="38" name="id">
       <Position>1</Position>
       <DataType>integer|0s</DataType>
       <NotNull>1</NotNull>
@@ -1758,35 +1864,42 @@ sequence|table|16424|16426|1
       <DefaultExpression>nextval(&apos;users_id_seq&apos;::regclass)</DefaultExpression>
       <TypeId>23</TypeId>
     </column>
-    <column id="57" parent="26" name="name">
+    <column id="69" parent="38" name="name">
       <Position>2</Position>
       <DataType>varchar(50)|0s</DataType>
       <StateNumber>492</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="58" parent="26" name="lname">
+    <column id="70" parent="38" name="lname">
       <Position>3</Position>
       <DataType>varchar(50)|0s</DataType>
       <StateNumber>492</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="59" parent="26" name="username">
+    <column id="71" parent="38" name="username">
       <Position>4</Position>
       <DataType>varchar(50)|0s</DataType>
       <NotNull>1</NotNull>
       <StateNumber>492</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="60" parent="26" name="created_at">
+    <column id="72" parent="38" name="created_at">
       <Position>5</Position>
       <DataType>timestamp|0s</DataType>
       <NotNull>1</NotNull>
       <StateNumber>492</StateNumber>
       <TypeId>1114</TypeId>
     </column>
-    <index id="61" parent="26" name="users_pkey">
+    <column id="73" parent="38" name="password">
+      <Position>6</Position>
+      <DataType>varchar(200)|0s</DataType>
+      <NotNull>1</NotNull>
+      <StateNumber>585</StateNumber>
+      <TypeId>1043</TypeId>
+    </column>
+    <index id="74" parent="38" name="users_pkey">
       <ObjectId>16390</ObjectId>
-      <StateNumber>492</StateNumber>
+      <StateNumber>565</StateNumber>
       <ColNames>id</ColNames>
       <Unique>1</Unique>
       <Primary>1</Primary>
@@ -1794,9 +1907,9 @@ sequence|table|16424|16426|1
       <CollationIds>0</CollationIds>
       <ClassIds>1978</ClassIds>
     </index>
-    <index id="62" parent="26" name="users_username_key">
+    <index id="75" parent="38" name="users_username_key">
       <ObjectId>16392</ObjectId>
-      <StateNumber>492</StateNumber>
+      <StateNumber>565</StateNumber>
       <ColNames>username</ColNames>
       <Unique>1</Unique>
       <AccessMethodId>403</AccessMethodId>
@@ -1804,14 +1917,14 @@ sequence|table|16424|16426|1
       <CollationNames>default</CollationNames>
       <ClassIds>3126</ClassIds>
     </index>
-    <key id="63" parent="26" name="users_pkey">
+    <key id="76" parent="38" name="users_pkey">
       <ObjectId>16391</ObjectId>
       <StateNumber>492</StateNumber>
       <ColNames>id</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>users_pkey</UnderlyingIndexName>
     </key>
-    <key id="64" parent="26" name="users_username_key">
+    <key id="77" parent="38" name="users_username_key">
       <ObjectId>16393</ObjectId>
       <StateNumber>492</StateNumber>
       <ColNames>username</ColNames>
