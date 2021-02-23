@@ -1406,13 +1406,13 @@ false posix/WET
 false posix/Zulu
 false posixrules
 </TimeZones>
-      <StartupTime>1613802866</StartupTime>
+      <StartupTime>1614063076</StartupTime>
     </root>
     <database id="2" parent="1" name="postgres">
       <ObjectId>13461</ObjectId>
       <Comment>default administrative connection database</Comment>
       <Owner>postgres</Owner>
-      <IntrospectionStateNumber>586</IntrospectionStateNumber>
+      <IntrospectionStateNumber>607</IntrospectionStateNumber>
       <Current>1</Current>
       <Relations>sequence|table|16384|16386|1
 sequence|table|16394|16396|1
@@ -1489,7 +1489,7 @@ UC/10
 </Acl>
       <StateNumber>275</StateNumber>
       <Owner>postgres</Owner>
-      <IntrospectionStateNumber>588</IntrospectionStateNumber>
+      <IntrospectionStateNumber>608</IntrospectionStateNumber>
       <Current>1</Current>
     </schema>
     <extension id="17" parent="2" name="plpgsql">
@@ -1632,7 +1632,7 @@ UC/10
     <table id="36" parent="16" name="permissions">
       <ObjectId>16396</ObjectId>
       <Owner>postgres</Owner>
-      <StateNumber>498</StateNumber>
+      <StateNumber>596</StateNumber>
     </table>
     <table id="37" parent="16" name="user_permissions">
       <ObjectId>16404</ObjectId>
@@ -1794,7 +1794,14 @@ UC/10
       <StateNumber>498</StateNumber>
       <TypeId>1114</TypeId>
     </column>
-    <index id="60" parent="36" name="permissions_pkey">
+    <column id="60" parent="36" name="role">
+      <Position>4</Position>
+      <DataType>varchar(50)|0s</DataType>
+      <NotNull>1</NotNull>
+      <StateNumber>603</StateNumber>
+      <TypeId>1043</TypeId>
+    </column>
+    <index id="61" parent="36" name="permissions_pkey">
       <ObjectId>16400</ObjectId>
       <StateNumber>498</StateNumber>
       <ColNames>id</ColNames>
@@ -1804,14 +1811,14 @@ UC/10
       <CollationIds>0</CollationIds>
       <ClassIds>1978</ClassIds>
     </index>
-    <key id="61" parent="36" name="permissions_pkey">
+    <key id="62" parent="36" name="permissions_pkey">
       <ObjectId>16401</ObjectId>
       <StateNumber>498</StateNumber>
       <ColNames>id</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>permissions_pkey</UnderlyingIndexName>
     </key>
-    <column id="62" parent="37" name="id">
+    <column id="63" parent="37" name="id">
       <Position>1</Position>
       <DataType>integer|0s</DataType>
       <NotNull>1</NotNull>
@@ -1819,27 +1826,27 @@ UC/10
       <DefaultExpression>nextval(&apos;user_permissions_id_seq&apos;::regclass)</DefaultExpression>
       <TypeId>23</TypeId>
     </column>
-    <column id="63" parent="37" name="user_id">
+    <column id="64" parent="37" name="user_id">
       <Position>2</Position>
       <DataType>numeric|0s</DataType>
       <NotNull>1</NotNull>
       <StateNumber>500</StateNumber>
       <TypeId>1700</TypeId>
     </column>
-    <column id="64" parent="37" name="permission_id">
+    <column id="65" parent="37" name="permission_id">
       <Position>3</Position>
       <DataType>numeric|0s</DataType>
       <NotNull>1</NotNull>
       <StateNumber>500</StateNumber>
       <TypeId>1700</TypeId>
     </column>
-    <column id="65" parent="37" name="created_at">
+    <column id="66" parent="37" name="created_at">
       <Position>4</Position>
       <DataType>timestamp|0s</DataType>
       <StateNumber>500</StateNumber>
       <TypeId>1114</TypeId>
     </column>
-    <index id="66" parent="37" name="user_permissions_pkey">
+    <index id="67" parent="37" name="user_permissions_pkey">
       <ObjectId>16411</ObjectId>
       <StateNumber>500</StateNumber>
       <ColNames>id</ColNames>
@@ -1849,14 +1856,14 @@ UC/10
       <CollationIds>0</CollationIds>
       <ClassIds>1978</ClassIds>
     </index>
-    <key id="67" parent="37" name="user_permissions_pkey">
+    <key id="68" parent="37" name="user_permissions_pkey">
       <ObjectId>16412</ObjectId>
       <StateNumber>500</StateNumber>
       <ColNames>id</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>user_permissions_pkey</UnderlyingIndexName>
     </key>
-    <column id="68" parent="38" name="id">
+    <column id="69" parent="38" name="id">
       <Position>1</Position>
       <DataType>integer|0s</DataType>
       <NotNull>1</NotNull>
@@ -1864,40 +1871,40 @@ UC/10
       <DefaultExpression>nextval(&apos;users_id_seq&apos;::regclass)</DefaultExpression>
       <TypeId>23</TypeId>
     </column>
-    <column id="69" parent="38" name="name">
+    <column id="70" parent="38" name="name">
       <Position>2</Position>
       <DataType>varchar(50)|0s</DataType>
       <StateNumber>492</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="70" parent="38" name="lname">
+    <column id="71" parent="38" name="lname">
       <Position>3</Position>
       <DataType>varchar(50)|0s</DataType>
       <StateNumber>492</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="71" parent="38" name="username">
+    <column id="72" parent="38" name="username">
       <Position>4</Position>
       <DataType>varchar(50)|0s</DataType>
       <NotNull>1</NotNull>
       <StateNumber>492</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="72" parent="38" name="created_at">
+    <column id="73" parent="38" name="created_at">
       <Position>5</Position>
       <DataType>timestamp|0s</DataType>
       <NotNull>1</NotNull>
       <StateNumber>492</StateNumber>
       <TypeId>1114</TypeId>
     </column>
-    <column id="73" parent="38" name="password">
+    <column id="74" parent="38" name="password">
       <Position>6</Position>
       <DataType>varchar(200)|0s</DataType>
       <NotNull>1</NotNull>
       <StateNumber>585</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <index id="74" parent="38" name="users_pkey">
+    <index id="75" parent="38" name="users_pkey">
       <ObjectId>16390</ObjectId>
       <StateNumber>565</StateNumber>
       <ColNames>id</ColNames>
@@ -1907,7 +1914,7 @@ UC/10
       <CollationIds>0</CollationIds>
       <ClassIds>1978</ClassIds>
     </index>
-    <index id="75" parent="38" name="users_username_key">
+    <index id="76" parent="38" name="users_username_key">
       <ObjectId>16392</ObjectId>
       <StateNumber>565</StateNumber>
       <ColNames>username</ColNames>
@@ -1917,14 +1924,14 @@ UC/10
       <CollationNames>default</CollationNames>
       <ClassIds>3126</ClassIds>
     </index>
-    <key id="76" parent="38" name="users_pkey">
+    <key id="77" parent="38" name="users_pkey">
       <ObjectId>16391</ObjectId>
       <StateNumber>492</StateNumber>
       <ColNames>id</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>users_pkey</UnderlyingIndexName>
     </key>
-    <key id="77" parent="38" name="users_username_key">
+    <key id="78" parent="38" name="users_username_key">
       <ObjectId>16393</ObjectId>
       <StateNumber>492</StateNumber>
       <ColNames>username</ColNames>

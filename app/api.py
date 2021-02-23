@@ -13,12 +13,12 @@ import pytz
 from fastapi.params import Body
 from app.auth.auth_bearer import JWTBearer
 from app.auth.auth_handler import sign_jwt, verify_password, get_password_hash
+from app.auth.role_check import RoleChecker
 from data.connection.redis.redis_connection import redis_connect
 from data.connection.postgres.postgres_connection import get_connection
 from app.model import Coupon, CouponOut, Invoice, InvoiceOut, UserLoginSchema, UserSchema
 
-# to get a string like this run:
-# openssl rand -hex 32
+from data.postgre_data import get_user_of_coupon, track_of_coupon, check_user, show_coupons
 from data.redis_data import get_routes_from_cache, set_routes_to_cache
 
 logging.basicConfig()
@@ -39,6 +39,8 @@ app = FastAPI()
 client = redis_connect()
 
 # ps_connection=None
+
+allow_create_resource = RoleChecker(["admin"])
 
 
 @app.get("/")
@@ -66,60 +68,61 @@ async def user_login(user: UserLoginSchema = Body(...)):
 
 @app.get("/coupons/{coupon_code}")
 def get_coupon(coupon_code: str, coupon_id: Optional[int] = None):
+    coupons = show_coupons(coupon_code)
+
     try:
-
-        coupon = get_routes_from_cache(key="coupon-code:" + coupon_code)
-        # if coupon is None:
-        #     #response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-        #     print(coupon)
-        #     return "Failed to get redis value"
-
-        d = coupon.decode('utf8').replace("'", '"')
-        c = json.loads(d)
-        print(c)
-        lst = {}
-        lst["id"] = c["id"]
-        lst["user_id"] = c["user_id"]
-        lst["coupon_code"] = c["coupon_code"]
-        lst["created_at"] = c["created_at"]
-        lst["rule"] = c["rule"]
-        lst["results"] = c["results"]
-        lst["description"] = c["description"]
-        return json.dumps(lst)
+        if coupons:
+            # for item in coupons:
+            lst = {}
+            lst["id"] = coupons[0]
+            lst["user_id"] = int(coupons[1])
+            lst["coupon_code"] = coupons[2]
+            lst["created_at"] = coupons[3].strftime("%Y-%m-%d %H:%M:%S")
+            lst["rule"] = coupons[4]
+            lst["results"] = coupons[5]
+            lst["description"] = coupons[6]
+            return json.dumps(lst)
     except (Exception, psycopg2.Error) as error:
         print(error)
         raise HTTPException(status_code=500, detail="Internal server error!")
 
-    # coupons = show_Coupons(coupon_code, coupon_id)
-    #
     # try:
-    #     if coupons:
-    #         for item in coupons:
-    #             lst = {}
-    #             lst["id"] = item[0]
-    #             lst["user_id"] = item[1]
-    #             lst["coupon_code"] = item[2]
-    #             lst["created_at"] = item[3]
-    #             lst["rule"] = item[4]
-    #             lst["results"] = item[5]
-    #             lst["description"] = item[6]
-    #             return lst
+    #
+    #     coupon = get_routes_from_cache(key="coupon-code:" + coupon_code)
+    #     # if coupon is None:
+    #     #     #response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    #     #     print(coupon)
+    #     #     return "Failed to get redis value"
+    #
+    #     d = coupon.decode('utf8').replace("'", '"')
+    #     c = json.loads(d)
+    #     print(c)
+    #     lst = {}
+    #     lst["id"] = c["id"]
+    #     lst["user_id"] = c["user_id"]
+    #     lst["coupon_code"] = c["coupon_code"]
+    #     lst["created_at"] = c["created_at"]
+    #     lst["rule"] = c["rule"]
+    #     lst["results"] = c["results"]
+    #     lst["description"] = c["description"]
+    #     return json.dumps(lst)
     # except (Exception, psycopg2.Error) as error:
     #     print(error)
     #     raise HTTPException(status_code=500, detail="Internal server error!")
 
 
-@app.post("/coupon/", status_code=201, dependencies=[Depends(JWTBearer())])
+
+@app.post("/coupon/", status_code=201, dependencies=[Depends(JWTBearer()), Depends(allow_create_resource)])
 async def create_coupon(coupon: Coupon, response: Response):
-    coupon_ = get_coupon(coupon.coupon_code)
-    if len(coupon_) != 0:
-        response.status_code = status.HTTP_409_CONFLICT
-        return "Coupon_code already exists!"
-        # raise HTTPException(status_code=409, detail="Coupon_code already exists!")
 
     ps_connection = get_connection()
     cur = ps_connection.cursor()
     try:
+        coupon_ = get_coupon(coupon.coupon_code)
+        if coupon_ is not None:
+            response.status_code = status.HTTP_409_CONFLICT
+            return "Coupon_code already exists!"
+            # raise HTTPException(status_code=409, detail="Coupon_code already exists!")
 
         results = '''
         {
@@ -179,13 +182,13 @@ async def create_coupon(coupon: Coupon, response: Response):
             description=coupon.description
         )
 
-        status_ = set_routes_to_cache(key="coupon-code:"+str(coupon.coupon_code), value=data.json())
-        if not status_:
-            response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-            return "Failed to set redis key"
+        # status_ = set_routes_to_cache(key="coupon-code:"+str(coupon.coupon_code), value=data.json())
+        # if not status_:
+        #     response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        #     return "Failed to set redis key"
 
 
-        print(get_routes_from_cache(key="coupon-code:"+str(coupon.coupon_code)))
+        # print(get_routes_from_cache(key="coupon-code:"+str(coupon.coupon_code)))
         response.status_code = status.HTTP_201_CREATED
     except (Exception, psycopg2.Error) as error:
         raise HTTPException(status_code=500, detail="Internal server error!")
@@ -244,16 +247,12 @@ async def use_coupon(invoice: Invoice, response: Response):
                 )
                 print(data.json())
                 # print(json.dumps(data))
-                status_ = set_routes_to_cache(key="invoice-id:" + str(invoice_id), value=data.json())
-                if not status_:
-                    response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-                    return "Failed to set redis key"
+                # status_ = set_routes_to_cache(key="invoice-id:" + str(invoice_id), value=data.json())
+                # if not status_:
+                #     response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+                #     return "Failed to set redis key"
 
-                # coupon = get_routes_from_cache(key="coupon-code:" + invoice.coupon_code)
-                # d = coupon.decode('utf8').replace("'", '"')
-                # c = json.loads(d)
-
-                print(get_routes_from_cache(key="invoice_id:" + str(invoice_id)))
+                # print(get_routes_from_cache(key="invoice_id:" + str(invoice_id)))
                 response.status_code = status.HTTP_201_CREATED
                 return data
             except (Exception, psycopg2.Error) as error:
@@ -266,126 +265,4 @@ async def use_coupon(invoice: Invoice, response: Response):
     except (Exception, psycopg2.Error) as error:
         print(error)
 
-
-def get_coupon(coupon_code_):
-    try:
-        connect = get_connection()
-        cur = connect.cursor()
-
-        cur.execute(
-            'select id from coupons where coupon_code = %s', [coupon_code_])
-        res = []
-        if cur.rowcount != 0:
-            res = cur.fetchall()
-            if res:
-                return [i[0] for i in res]
-        return res
-    except(Exception, psycopg2.Error) as error:
-        raise HTTPException(status_code=500, detail="Internal server error!")
-
-
-def get_user_of_coupon(coupon_code_, user_id):
-    try:
-        connect = get_connection()
-        cur = connect.cursor()
-        qry = '''select id,user_id, rule->'rule'->>'count_of_use' as count_of_use
-        ,rule->'rule'->>'expire_date' as expire_date,results->'results'->>'discount_type'
-        as discount_type,results->'results'->>'discount_ceil' as discount_ceil
-        from coupons where coupon_code = %s and user_id = %s'''
-
-        cur.execute(qry
-                    , (coupon_code_, user_id))
-        res = []
-        lst = []
-        if cur.rowcount != 0:
-            res = cur.fetchall()
-            if res:
-                for i in res:
-                    counter = 0
-                    lst = []
-                    for j in i:
-                        lst.append(j)
-                        counter += 1
-        return lst
-    except(Exception, psycopg2.Error) as error:
-        raise HTTPException(status_code=500, detail="Internal server error!")
-
-
-def show_coupons(coupon_code_=None, coupon_id_=None):
-    try:
-        connect = get_connection()
-        cur = connect.cursor()
-        qry = 'select * from coupons where 1=1'
-        qry_c = None
-        if coupon_code_ is not None:
-            qry += ' and coupon_code = %s'
-            qry_c = [coupon_code_]
-        elif coupon_id_ is not None:
-            qry += ' and coupon_id_ = %s'
-            qry_c = [coupon_id_]
-        else:
-            # return "One parameter must be involved!"
-            raise HTTPException(status_code=400, detail="One parameter must be involved!")
-
-        cur.execute(
-            qry, qry_c)
-        res = []
-        out = []
-        if cur.rowcount != 0:
-            res = cur.fetchall()
-            if res:
-                count = 0
-                for i in res:
-                    counter = 0
-                    lst = []
-                    for j in i:
-                        lst.append(j)
-                        counter += 1
-                    out.append(lst)
-                    count += 1
-
-        return out
-    except(Exception, psycopg2.Error) as error:
-        raise HTTPException(status_code=500, detail="Internal server error!")
-
-
-def track_of_coupon(coupon_code_):
-    try:
-        connect = get_connection()
-        cur = connect.cursor()
-
-        cur.execute(
-            'select id from invoices where coupon_code = %s', [coupon_code_])
-        res = []
-        if cur.rowcount != 0:
-            res = cur.fetchall()
-            if res:
-                return [i[0] for i in res]
-        return res
-    except(Exception, psycopg2.Error) as error:
-        raise HTTPException(status_code=500, detail="Internal server error!")
-
-
-def check_user(data: UserSchema):
-    try:
-        connect = get_connection()
-        cur = connect.cursor()
-        d = json.loads(data.json())
-        cur.execute(
-            'select * from users where username = %s', [d['username']])
-
-        res = []
-        if cur.rowcount != 0:
-            res = cur.fetchall()
-            if res:
-
-                for i in res:
-                    counter = 0
-                    lst = []
-                    for j in i:
-                        lst.append(j)
-                        counter += 1
-            return lst
-    except(Exception, psycopg2.Error) as error:
-        raise HTTPException(status_code=500, detail="Internal server error!")
 
