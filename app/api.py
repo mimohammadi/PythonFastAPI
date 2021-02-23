@@ -19,7 +19,7 @@ from app.model import Coupon, CouponOut, Invoice, InvoiceOut, UserLoginSchema, U
 
 # to get a string like this run:
 # openssl rand -hex 32
-
+from data.redis_data import get_routes_from_cache, set_routes_to_cache
 
 logging.basicConfig()
 
@@ -265,20 +265,6 @@ async def use_coupon(invoice: Invoice, response: Response):
             return "Coupon not exists or is not authorized!"
     except (Exception, psycopg2.Error) as error:
         print(error)
-
-
-def get_routes_from_cache(key: str) -> str:
-    """Get data from redis."""
-
-    val = client.get(key)
-    return val
-
-
-def set_routes_to_cache(key: str, value: str) -> bool:
-    """Set data to redis."""
-
-    state = client.setex(key, timedelta(seconds=3600), value=value, )
-    return state
 
 
 def get_coupon(coupon_code_):
