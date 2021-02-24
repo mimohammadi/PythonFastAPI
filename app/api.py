@@ -52,6 +52,7 @@ def read_root():
 async def user_login(user: UserLoginSchema = Body(...)):
     u = json.loads(user.json())
     # u["password"] = get_password_hash(u["password"])
+
     data = UserSchema(
         username=u["username"],
         password=u["password"]
@@ -109,7 +110,6 @@ def get_coupon(coupon_code: str, coupon_id: Optional[int] = None):
     # except (Exception, psycopg2.Error) as error:
     #     print(error)
     #     raise HTTPException(status_code=500, detail="Internal server error!")
-
 
 
 @app.post("/coupon/", status_code=201, dependencies=[Depends(JWTBearer()), Depends(allow_create_resource)])
@@ -186,8 +186,6 @@ async def create_coupon(coupon: Coupon, response: Response):
         # if not status_:
         #     response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
         #     return "Failed to set redis key"
-
-
         # print(get_routes_from_cache(key="coupon-code:"+str(coupon.coupon_code)))
         response.status_code = status.HTTP_201_CREATED
     except (Exception, psycopg2.Error) as error:
