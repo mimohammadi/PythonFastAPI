@@ -52,13 +52,16 @@ def read_root():
 async def user_login(user: UserLoginSchema = Body(...)):
     u = json.loads(user.json())
     # u["password"] = get_password_hash(u["password"])
-
     data = UserSchema(
         username=u["username"],
         password=u["password"]
     )
     user_ = check_user(data)
     if user_ is not None:
+        token = get_routes_from_cache('users_id:' + str(user_[0]))
+        if token is not None:
+            d = token.decode('utf8').replace("'", '"')
+            return json.loads(d)
         if not verify_password(u["password"], user_[5]):
             return False
         return sign_jwt(user_[0])

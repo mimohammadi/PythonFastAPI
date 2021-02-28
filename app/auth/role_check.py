@@ -29,18 +29,18 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         raise credentials_exception
     return user
 
-
-async def get_current_active_user(current_user: User = Depends(get_current_user)):
-    # if current_user.disabled:
-    #    raise HTTPException(status_code=400, detail="Inactive user")
-    return current_user
+#
+# async def get_current_active_user(current_user: User = Depends(get_current_user)):
+#     # if current_user.disabled:
+#     #    raise HTTPException(status_code=400, detail="Inactive user")
+#     return current_user
 
 
 class RoleChecker:
     def __init__(self, allowed_roles: List):
         self.allowed_roles = allowed_roles
 
-    def __call__(self, user: User = Depends(get_current_active_user)):
+    def __call__(self, user: User = Depends(get_current_user)):
         roles = get_user_permission(user.username)
         counter = 0
         for role in roles:
