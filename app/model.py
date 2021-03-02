@@ -87,3 +87,8 @@ class User(BaseModel):
 
 class UserInDB(User):
     hashed_password: str
+
+
+class Order(BaseModel):
+    customer_name: str
+    order_quantity: int

@@ -7,19 +7,19 @@ import json
 from datetime import datetime
 import datetime
 import logging
-from datetime import timedelta
 import pytz
 # from passlib.context import CryptContext
 from fastapi.params import Body
 from app.auth.auth_bearer import JWTBearer
-from app.auth.auth_handler import sign_jwt, verify_password, get_password_hash
+from app.auth.auth_handler import sign_jwt, verify_password
 from app.auth.role_check import RoleChecker
 from data.connection.redis.redis_connection import redis_connect
 from data.connection.postgres.postgres_connection import get_connection
-from app.model import Coupon, CouponOut, Invoice, InvoiceOut, UserLoginSchema, UserSchema
+from app.model import Coupon, CouponOut, Invoice, InvoiceOut, UserLoginSchema, UserSchema, Order
 
 from data.postgre_data import get_user_of_coupon, track_of_coupon, check_user, show_coupons
-from data.redis_data import get_routes_from_cache, set_routes_to_cache
+from data.redis_data import get_routes_from_cache
+from celery_worker import create_order
 
 logging.basicConfig()
 
@@ -58,10 +58,10 @@ async def user_login(user: UserLoginSchema = Body(...)):
     )
     user_ = check_user(data)
     if user_ is not None:
-        token = get_routes_from_cache('users_id:' + str(user_[0]))
-        if token is not None:
-            d = token.decode('utf8').replace("'", '"')
-            return json.loads(d)
+        # token = get_routes_from_cache('users_id:' + str(user_[0]))
+        # if token is not None:
+        #     d = token.decode('utf8').replace("'", '"')
+        #     return json.loads(d)
         if not verify_password(u["password"], user_[5]):
             return False
         return sign_jwt(user_[0])
@@ -267,3 +267,8 @@ async def use_coupon(invoice: Invoice, response: Response):
         print(error)
 
 
+@app.post('/order')
+def add_order(order: Order):
+    # use delay() method to call the celery task
+    create_order.delay(order.customer_name, order.order_quantity)
+    return {"message": "Order Received! Thank you for your patience."}
