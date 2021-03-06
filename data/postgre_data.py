@@ -7,51 +7,53 @@ from data.connection.postgres.postgres_connection import get_connection
 
 
 def get_coupon(coupon_code_):
-    try:
-        connect = get_connection()
-        cur = connect.cursor()
+    # try:
+    connect = get_connection()
+    cur = connect.cursor()
 
-        cur.execute(
+    cur.execute(
             'select id from coupons where coupon_code = %s', [coupon_code_])
-        res = []
-        if cur.rowcount != 0:
-            res = cur.fetchall()
-            if res:
-                return [i[0] for i in res]
-        return res
-    except(Exception, psycopg2.Error) as error:
-        raise HTTPException(status_code=500, detail="Internal server error!")
+    res = []
+    if cur.rowcount != 0:
+        res = cur.fetchall()
+        if res:
+            return [i[0] for i in res]
+    return res
+    # except(Exception, psycopg2.Error) as error:
+    #     # raise HTTPException(status_code=500, detail="Internal server error!")
+    #     return res
 
 
 def get_user_of_coupon(coupon_code_, user_id):
-    try:
-        connect = get_connection()
-        cur = connect.cursor()
-        qry = '''select id,user_id, rule->'rule'->>'count_of_use' as count_of_use
+    #try:
+    connect = get_connection()
+    cur = connect.cursor()
+    qry = '''select id,user_id, rule->'rule'->>'count_of_use' as count_of_use
         ,rule->'rule'->>'expire_date' as expire_date,results->'results'->>'discount_type'
         as discount_type,results->'results'->>'discount_ceil' as discount_ceil
         from coupons where coupon_code = %s and user_id = %s'''
 
-        cur.execute(qry
+    cur.execute(qry
                     , (coupon_code_, user_id))
-        res = []
-        lst = []
-        if cur.rowcount != 0:
-            res = cur.fetchall()
-            if res:
-                for i in res:
-                    counter = 0
-                    lst = []
-                    for j in i:
-                        lst.append(j)
-                        counter += 1
-        return lst
-    except(Exception, psycopg2.Error) as error:
-        raise HTTPException(status_code=500, detail="Internal server error!")
+    res = []
+    lst = []
+    if cur.rowcount != 0:
+        res = cur.fetchall()
+        if res:
+            for i in res:
+                counter = 0
+                lst = []
+                for j in i:
+                    lst.append(j)
+                    counter += 1
+    return lst
+    #except(Exception, psycopg2.Error) as error:
+        # raise HTTPException(status_code=500, detail="Internal server error!")
+        #return lst
 
 
 def show_coupons(coupon_code_=None):
-    try:
+    #try:
         connect = get_connection()
         cur = connect.cursor()
         qry = 'select * from coupons where 1=1'
@@ -85,12 +87,12 @@ def show_coupons(coupon_code_=None):
                     # count += 1
         return lst
         # return out
-    except(Exception, psycopg2.Error) as error:
-        raise HTTPException(status_code=500, detail="Internal server error!")
+    # except(Exception, psycopg2.Error) as error:
+    #     raise HTTPException(status_code=500, detail="Internal server error!")
 
 
 def track_of_coupon(coupon_code_):
-    try:
+    # try:
         connect = get_connection()
         cur = connect.cursor()
 
@@ -102,12 +104,12 @@ def track_of_coupon(coupon_code_):
             if res:
                 return [i[0] for i in res]
         return res
-    except(Exception, psycopg2.Error) as error:
-        raise HTTPException(status_code=500, detail="Internal server error!")
+    # except(Exception, psycopg2.Error) as error:
+    #     raise HTTPException(status_code=500, detail="Internal server error!")
 
 
 def check_user(data: UserSchema):
-    try:
+    # try:
         connect = get_connection()
         cur = connect.cursor()
         d = json.loads(data.json())
@@ -126,12 +128,12 @@ def check_user(data: UserSchema):
                         lst.append(j)
                         counter += 1
             return lst
-    except(Exception, psycopg2.Error) as error:
-        raise HTTPException(status_code=500, detail="Internal server error!")
+    # except(Exception, psycopg2.Error) as error:
+    #     raise HTTPException(status_code=500, detail="Internal server error!")
 
 
 def get_user(user_id: int):
-    try:
+    # try:
         connect = get_connection()
         cur = connect.cursor()
         cur.execute(
@@ -149,12 +151,13 @@ def get_user(user_id: int):
                 )
 
         return data
-    except(Exception, psycopg2.Error) as error:
-        raise HTTPException(status_code=500, detail="Internal server error!")
+    # except(Exception, psycopg2.Error) as error:
+    #     raise HTTPException(status_code=500, detail="Internal server error!")
+    #
 
 
 def get_user_permission(username: str):
-    try:
+    # try:
         connect = get_connection()
         cur = connect.cursor()
         cur.execute(
@@ -174,6 +177,6 @@ def get_user_permission(username: str):
             if res:
                 return [i[0] for i in res]
 
-    except(Exception, psycopg2.Error) as error:
-        raise HTTPException(status_code=500, detail="Internal server error!")
-    return res
+    # except(Exception, psycopg2.Error) as error:
+    #     raise HTTPException(status_code=500, detail="Internal server error!")
+        return res
