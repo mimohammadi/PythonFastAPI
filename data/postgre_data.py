@@ -180,3 +180,26 @@ def get_user_permission(username: str):
     # except(Exception, psycopg2.Error) as error:
     #     raise HTTPException(status_code=500, detail="Internal server error!")
         return res
+
+
+def get_user_permission_by_user_id(user_id: int):
+    # try:
+        connect = get_connection()
+        cur = connect.cursor()
+        cur.execute(
+            '''with a as
+                (
+                        select permission_id from user_permissions up where user_id = %s
+                )
+                select role from permissions p where exists(select * from a where a.permission_id = p.id)''',
+            [user_id])
+
+        res = []
+        if cur.rowcount != 0:
+            res = cur.fetchall()
+            if res:
+                return [i[0] for i in res]
+
+    # except(Exception, psycopg2.Error) as error:
+    #     raise HTTPException(status_code=500, detail="Internal server error!")
+        return res

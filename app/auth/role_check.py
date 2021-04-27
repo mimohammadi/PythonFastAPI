@@ -1,5 +1,6 @@
 from typing import List
 
+import psycopg2
 from fastapi import Depends, HTTPException
 from jose import JWTError
 
@@ -7,7 +8,7 @@ from app.auth.auth_handler import oauth2_scheme, decode_jwt
 from app.model import User, TokenData
 from fastapi import status, HTTPException
 
-from data.postgre_data import get_user, get_user_permission
+from data.postgre_data import get_user, get_user_permission, get_user_permission_by_user_id
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
@@ -50,5 +51,23 @@ class RoleChecker:
         if counter == len(roles):
             raise HTTPException(status_code=403, detail="Operation not permitted")
 
+
+def check_role(allowed_roles, user_id=Depends(get_current_user)):
+    if allowed_roles is None:
+        return
+    roles = get_user_permission_by_user_id(user_id)
+    counter = 0
+    for role in roles:
+        if role not in allowed_roles:
+            counter += 1
+            # logger.debug(f"User with role {user.role} not in {self.allowed_roles}")
+        #else:
+            # try:
+            #     #return True
+            # except (Exception, psycopg2.Error) as error:
+            #     print(error)
+    if counter == len(roles):
+        raise HTTPException(status_code=403, detail="Operation not permitted")
+        #return False
 
 
